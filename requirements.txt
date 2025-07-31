@@ -1,5 +1,15 @@
+# Simple RAG Text Summarizer Dependencies
+# LangChain core for RAG functionality
 langchain>=0.1.0
-langchain-openai>=0.0.5
-langgraph>=0.0.1
 langchain-groq>=0.1.0
+
+# Web scraping and content processing
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+
+# Simple vectorization with TF-IDF
+scikit-learn>=1.0.0
+numpy>=1.21.0
+
+# Configuration management
 python-dotenv>=1.0.0
