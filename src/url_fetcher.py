@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # Fetch URL Content
-def fetch_url_content(url):
+def fetch_url_content_as_chunks(url):
     try:
         # Set headers to mimic a real browser
         headers = {

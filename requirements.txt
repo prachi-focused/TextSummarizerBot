@@ -13,3 +13,8 @@ numpy>=1.21.0
 
 # Configuration management
 python-dotenv>=1.0.0
+
+# Evaluation and monitoring
+langsmith>=0.1.0
+openevals>=0.1.0
+langgraph>=0.2.0
