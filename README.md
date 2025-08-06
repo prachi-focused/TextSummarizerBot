@@ -47,7 +47,7 @@ A web content processing and question-answering system built with LangChain and 
 ```
 text-summarizer-app/
 ├── src/                    # Main application code
-│   ├── summarizerBot.py   # Main functions: process_url() & ask_question()
+│   ├── documentQABot.py   # Main functions: process_url() & ask_question()
 │   ├── url_fetcher.py     # Web content fetching with BeautifulSoup
 │   ├── rag_chain.py       # RAG workflow orchestration with LCEL
 │   ├── retriever.py       # TF-IDF document retrieval & vector storage
@@ -66,7 +66,7 @@ text-summarizer-app/
 source venv/bin/activate
 
 # Run the example (processes URL + asks questions)
-python src/summarizerBot.py
+python src/documentQABot.py
 ```
 
 ## How It Works

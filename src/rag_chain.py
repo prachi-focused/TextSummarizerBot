@@ -18,7 +18,9 @@ class RAGChain:
         # Initialize LLM and prompt
         self.llm = ChatGroq(model="llama-3.1-8b-instant", temperature=0.7)
         self.prompt = ChatPromptTemplate.from_template("""
-            You are a helpful assistant that answers questions based on the context.
+            You are a helpful assistant that answers questions based on the context. 
+            Stick to the context for the answer.
+                                                       
             Context: {context}
             Question: {question}
         """)
@@ -26,15 +28,7 @@ class RAGChain:
         # Create the retrieval chain using LCEL
         self.rag_chain = None
    
-    def process_input(self, user_input: str) -> str:
-        """Check if input has URL, fetch data or retrieve from vector store"""
-        # Check if input contains URL
-        if validate_url(user_input):
-            return self._process_url(user_input)
-        else:
-            return self._query_vector_store(user_input)
-    
-    def _process_url(self, url: str) -> str:
+    def process_url(self, url: str) -> str:
         """Fetch content from URL and initialize vector store"""
         # Fetch content
         content = fetch_url_content_as_chunks(url)
@@ -63,7 +57,7 @@ class RAGChain:
         # Return confirmation
         return "Vector store initialized."
     
-    def _query_vector_store(self, question: str) -> str:
+    def query_data(self, question: str) -> str:
         """Answer question from existing vector store using LangChain retrieval chain"""
         if not self.rag_chain:
             return "No vector store initialized. Please process a URL first."

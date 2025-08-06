@@ -1,29 +1,26 @@
 """
 Dataset Setup for Text Summarizer Evaluation
-This file creates a LangSmith dataset using the new summarizer functions for evaluating RAG-based Q&A.
+This file creates a LangSmith dataset for evaluating RAG-based Q&A.
 """
 
 from langsmith import Client
-import sys
 import os
+from dotenv import load_dotenv
 
-# Add src directory to path to import summarizer functions
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
-from summarizerBot import process_url, ask_question
+load_dotenv()
+
 
 def create_summarizer_dataset():
     """Create a dataset with URL + question pairs for summarizer evaluation."""
     
     client = Client()
 
-    # Create dataset for text summarizer evaluation
-    dataset = client.create_dataset(
-        dataset_name="RAG Summarizer Q&A Dataset", 
-        description="A dataset of URLs and questions for evaluating RAG-based question answering and summarization."
-    )
+    # Programmatically create a dataset in LangSmith
+    dataset = client.create_dataset(dataset_name="Text Summarizer Q&A Dataset")
 
-    # Sample URL + question pairs for testing different types of content and queries
+    # Test cases
     examples = [
+        # Case 1: Summary Tests
         {
             "inputs": {
                 "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
@@ -35,141 +32,62 @@ def create_summarizer_dataset():
         },
         {
             "inputs": {
-                "url": "https://en.wikipedia.org/wiki/Machine_learning",
-                "question": "What are the main types of machine learning?"
+                "url": "https://realpython.com/python-introduction/",
+                "question": "Summarize what Python programming language is in 3 sentences"
             },
             "outputs": {
-                "expected_answer": "Should mention supervised, unsupervised, and reinforcement learning"
+                "expected_answer": "Should provide a concise 3-sentence summary covering Python's nature, features, and popularity from the blog perspective"
             },
         },
-        {
-            "inputs": {
-                "url": "https://en.wikipedia.org/wiki/Natural_language_processing",
-                "question": "What are the practical applications of NLP?"
-            },
-            "outputs": {
-                "expected_answer": "Should list applications like chatbots, translation, sentiment analysis, etc."
-            },
-        },
-        {
-            "inputs": {
-                "url": "https://en.wikipedia.org/wiki/Deep_learning",
-                "question": "How do neural networks work in deep learning?"
-            },
-            "outputs": {
-                "expected_answer": "Should explain neural network structure, layers, and learning process"
-            },
-        },
-        {
-            "inputs": {
-                "url": "https://en.wikipedia.org/wiki/Python_(programming_language)",
-                "question": "What makes Python popular for data science and AI?"
-            },
-            "outputs": {
-                "expected_answer": "Should mention simplicity, libraries like NumPy/Pandas/TensorFlow, and ecosystem"
-            },
-        },
+        
+        # Case 2: Specific Context Questions
         {
             "inputs": {
                 "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
-                "question": "What are the ethical concerns around AI?"
+                "question": "What are the main branches or types of AI mentioned?"
             },
             "outputs": {
-                "expected_answer": "Should discuss bias, job displacement, privacy, and control concerns"
+                "expected_answer": "Should mention specific AI types like narrow AI, general AI, machine learning, etc. based on context"
+            },
+        },
+        {
+            "inputs": {
+                "url": "https://realpython.com/python-introduction/",
+                "question": "What are the key advantages of Python mentioned in this article?"
+            },
+            "outputs": {
+                "expected_answer": "Should mention Python's advantages like readability, simplicity, extensive libraries, community support, etc. based on the blog content"
+            },
+        },
+        
+        # Case 3: Out of Context Questions
+        {
+            "inputs": {
+                "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
+                "question": "What is the current stock price of Tesla?"
+            },
+            "outputs": {
+                "expected_answer": "Should respond that this information is not mentioned in the context or not available"
+            },
+        },
+        {
+            "inputs": {
+                "url": "https://realpython.com/python-introduction/",
+                "question": "What are the latest developments in blockchain technology?"
+            },
+            "outputs": {
+                "expected_answer": "Should respond that this information is not mentioned in the context or not available"
             },
         },
     ]
 
     # Add examples to the dataset
-    for example in examples:
-        client.create_example(
-            inputs=example["inputs"],
-            outputs=example["outputs"],
-            dataset_id=dataset.id,
-        )
+    client.create_examples(dataset_id=dataset.id, examples=examples)
 
     print(f"Created dataset '{dataset.name}' with {len(examples)} examples")
     print(f"Dataset ID: {dataset.id}")
     return dataset
 
-def test_summarizer_with_example():
-    """Test the summarizer functions with a sample URL and question."""
-    
-    # Sample test case
-    url = "https://en.wikipedia.org/wiki/Artificial_intelligence"
-    question = "Summarize the main concepts of artificial intelligence in 3 sentences"
-    
-    print("=" * 60)
-    print("Testing Summarizer Functions")
-    print("=" * 60)
-    
-    # Step 1: Process URL
-    print(f"1. Processing URL: {url}")
-    status = process_url(url)
-    print(f"   Status: {status}")
-    
-    if "initialized" in status.lower():
-        print("\n2. Asking question...")
-        # Step 2: Ask question
-        answer = ask_question(question)
-        
-        print(f"\n3. Evaluation complete!")
-        print(f"   Question: {question}")
-        print(f"   Answer: {answer[:200]}..." if len(answer) > 200 else f"   Answer: {answer}")
-    else:
-        print(f"   Failed to process URL: {status}")
-
-def run_dataset_evaluation_example():
-    """Example of how to evaluate using the dataset structure."""
-    
-    # This shows how an evaluator would use the dataset
-    example_input = {
-        "url": "https://en.wikipedia.org/wiki/Machine_learning",
-        "question": "What are the main types of machine learning?"
-    }
-    
-    expected_output = {
-        "expected_answer": "Should mention supervised, unsupervised, and reinforcement learning"
-    }
-    
-    print("\n" + "=" * 60)
-    print("Dataset Evaluation Example")
-    print("=" * 60)
-    print(f"Input URL: {example_input['url']}")
-    print(f"Input Question: {example_input['question']}")
-    print(f"Expected: {expected_output['expected_answer']}")
-    
-    # Process URL and ask question
-    url_status = process_url(example_input['url'])
-    
-    if "initialized" in url_status.lower():
-        actual_answer = ask_question(example_input['question'])
-        
-        print("\n" + "-" * 40)
-        print("EVALUATION RESULT:")
-        print(f"Actual Answer: {actual_answer}")
-        print("-" * 40)
-        
-        return {
-            "input": example_input,
-            "expected": expected_output,
-            "actual": actual_answer,
-            "status": "success"
-        }
-    else:
-        return {
-            "input": example_input,
-            "expected": expected_output,
-            "actual": f"Failed to process URL: {url_status}",
-            "status": "failed"
-        }
-
 if __name__ == "__main__":
     # Create the dataset
     create_summarizer_dataset()
-    
-    # Test the summarizer functions
-    test_summarizer_with_example()
-    
-    # Show evaluation example
-    run_dataset_evaluation_example()
