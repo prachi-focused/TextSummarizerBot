@@ -57,13 +57,34 @@ class RAGChain:
         # Return confirmation
         return "Vector store initialized."
     
-    def query_data(self, question: str) -> str:
-        """Answer question from existing vector store using LangChain retrieval chain"""
+    def query_data_with_context(self, question: str) -> dict:
+        """Answer question and return both answer and retrieved context"""
         if not self.rag_chain:
-            return "No vector store initialized. Please process a URL first."
+            return {
+                "answer": "No vector store initialized. Please process a URL first.",
+                "context": ""
+            }
         
         try:
-            # Use the LangChain retrieval chain
-            return self.rag_chain.invoke(question)
+            # Retrieve documents first
+            docs = self.retriever.retrieve(question)
+            context = "\n\n".join(doc.page_content for doc in docs)
+            
+            # Get answer using the chain
+            answer = self.rag_chain.invoke(question)
+            
+            return {
+                "answer": answer,
+                "context": context
+            }
         except Exception as e:
-            return f"Error answering question: {e}"
+            return {
+                "answer": f"Error answering question: {e}",
+                "context": ""
+            }
+    
+    def query_data(self, question: str) -> str:
+        """Answer question from existing vector store using LangChain retrieval chain"""
+        # Use the main method and extract just the answer
+        result = self.query_data_with_context(question)
+        return result["answer"]

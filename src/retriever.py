@@ -21,7 +21,6 @@ class DocumentRetriever:
         self.documents = [Document(page_content=chunk) for chunk in chunks]
         # Create TF-IDF vectors for all chunks
         self.vectors = self.vectorizer.fit_transform(chunks)
-        print(f"Created vector store with {len(self.documents)} chunks")
     
     def retrieve(self, query: str) -> List[Document]:
         """Get relevant documents using TF-IDF similarity"""

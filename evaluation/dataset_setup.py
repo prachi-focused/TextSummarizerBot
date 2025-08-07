@@ -27,7 +27,7 @@ def create_summarizer_dataset():
                 "question": "Summarize the main concepts of artificial intelligence in 3 sentences"
             },
             "outputs": {
-                "expected_answer": "Should provide a concise 3-sentence summary covering AI definition, key applications, and current state"
+                "answer_criteria": "Should provide a concise 3-sentence summary covering AI definition, key applications, and current state"
             },
         },
         {
@@ -36,7 +36,7 @@ def create_summarizer_dataset():
                 "question": "Summarize what Python programming language is in 3 sentences"
             },
             "outputs": {
-                "expected_answer": "Should provide a concise 3-sentence summary covering Python's nature, features, and popularity from the blog perspective"
+                "answer_criteria": "Should provide a concise 3-sentence summary covering Python's nature, features, and popularity from the blog perspective"
             },
         },
         
@@ -47,7 +47,7 @@ def create_summarizer_dataset():
                 "question": "What are the main branches or types of AI mentioned?"
             },
             "outputs": {
-                "expected_answer": "Should mention specific AI types like narrow AI, general AI, machine learning, etc. based on context"
+                "answer_criteria": "Should mention specific AI types like narrow AI, general AI, machine learning, etc. based on context"
             },
         },
         {
@@ -56,7 +56,7 @@ def create_summarizer_dataset():
                 "question": "What are the key advantages of Python mentioned in this article?"
             },
             "outputs": {
-                "expected_answer": "Should mention Python's advantages like readability, simplicity, extensive libraries, community support, etc. based on the blog content"
+                "answer_criteria": "Should mention Python's advantages like readability, simplicity, extensive libraries, community support, etc. based on the blog content"
             },
         },
         
@@ -67,7 +67,7 @@ def create_summarizer_dataset():
                 "question": "What is the current stock price of Tesla?"
             },
             "outputs": {
-                "expected_answer": "Should respond that this information is not mentioned in the context or not available"
+                "answer_criteria": "Should respond that this information is not mentioned in the context or not available"
             },
         },
         {
@@ -76,7 +76,7 @@ def create_summarizer_dataset():
                 "question": "What are the latest developments in blockchain technology?"
             },
             "outputs": {
-                "expected_answer": "Should respond that this information is not mentioned in the context or not available"
+                "answer_criteria": "Should respond that this information is not mentioned in the context or not available"
             },
         },
     ]
