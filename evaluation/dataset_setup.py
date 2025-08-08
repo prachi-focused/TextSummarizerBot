@@ -23,11 +23,11 @@ def create_summarizer_dataset():
         # Case 1: Summary Tests
         {
             "inputs": {
-                "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
-                "question": "Summarize the main concepts of artificial intelligence in 3 sentences"
+                "url": "https://bigthink.com/starts-with-a-bang/nuclear-reactor-moon-nasa/?utm_source=firefox-newtab-en-us",
+                "question": "Summarize the blog post in 3 sentences"
             },
             "outputs": {
-                "answer_criteria": "Should provide a concise 3-sentence summary covering AI definition, key applications, and current state"
+                "answer_criteria": "Should provide a concise 3-sentence summary covering the Moon’s power challenges, NASA’s nuclear reactor plan, and its broader implications."
             },
         },
         {
@@ -36,18 +36,18 @@ def create_summarizer_dataset():
                 "question": "Summarize what Python programming language is in 3 sentences"
             },
             "outputs": {
-                "answer_criteria": "Should provide a concise 3-sentence summary covering Python's nature, features, and popularity from the blog perspective"
+                "answer_criteria": "Should provide a concise 3-sentence summary covering Python's purpose, features, and use cases mentioned in the blog post"
             },
         },
         
         # Case 2: Specific Context Questions
         {
             "inputs": {
-                "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
-                "question": "What are the main branches or types of AI mentioned?"
+                "url": "https://bigthink.com/starts-with-a-bang/nuclear-reactor-moon-nasa/?utm_source=firefox-newtab-en-us",
+                "question": "Is there a nuclear reactor planned for the Moon?"
             },
             "outputs": {
-                "answer_criteria": "Should mention specific AI types like narrow AI, general AI, machine learning, etc. based on context"
+                "answer_criteria": "Should mention the specific power output (in kilowatts) and the targeted deployment timeline."
             },
         },
         {
@@ -56,18 +56,18 @@ def create_summarizer_dataset():
                 "question": "What are the key advantages of Python mentioned in this article?"
             },
             "outputs": {
-                "answer_criteria": "Should mention Python's advantages like readability, simplicity, extensive libraries, community support, etc. based on the blog content"
+                "answer_criteria": "Should mention Python's advantages as a programming language."
             },
         },
         
         # Case 3: Out of Context Questions
         {
             "inputs": {
-                "url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
-                "question": "What is the current stock price of Tesla?"
+                "url": "https://bigthink.com/starts-with-a-bang/nuclear-reactor-moon-nasa/?utm_source=firefox-newtab-en-us",
+                "question": "What is the distance between the Earth and the Moon?"
             },
             "outputs": {
-                "answer_criteria": "Should respond that this information is not mentioned in the context or not available"
+                "answer_criteria": "Should respond that this information is not mentioned in the context."
             },
         },
         {
@@ -76,7 +76,7 @@ def create_summarizer_dataset():
                 "question": "What are the latest developments in blockchain technology?"
             },
             "outputs": {
-                "answer_criteria": "Should respond that this information is not mentioned in the context or not available"
+                "answer_criteria": "Should respond that this information is not mentioned in the context."
             },
         },
     ]

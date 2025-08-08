@@ -3,6 +3,7 @@ import sys
 from dotenv import load_dotenv
 from langsmith import Client
 from langchain_groq import ChatGroq
+import json
 
 # Add src directory to Python path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -48,48 +49,54 @@ def relevance_evaluator(inputs: dict, outputs: dict, reference_outputs: dict):
     question = inputs.get('question', '')
     answer = outputs.get('answer', '')
     retrieved_context = outputs.get('context', '')
+    answer_criteria = reference_outputs.get("answer_criteria", '')
     
     # Initialize LLM for evaluation
     llm = ChatGroq(model="llama-3.1-8b-instant", temperature=0)
     
-    # Create evaluation prompt
+    # Create evaluation prompt that returns JSON
     evaluation_prompt = f"""
-        You are an expert evaluator. Your task is to determine if the answer is relevant to the question based on the content retrieved from the provided URL.
+        You are an expert evaluator. Your task is to determine if the answer is relevant to the question based on:
+        - The content retrieved from the given URL
+        - The expected answer criteria (which takes priority over content grounding)
+
+        IMPORTANT: If the answer_criteria indicate that the system should respond with "not mentioned", "not available", "I don't know", or similar acknowledgments of missing information, then SKIP evaluating content grounding and focus only on whether the system correctly identifies the lack of information.
+
+        Evaluate the following:
+        1. Does the answer address the question being asked?
+        2. Does the answer meet the expected answer_criteria?
+        3. Is the answer grounded in the retrieved content? (Skip if the expected response is "no information found")
 
         Question: {question}
         Answer: {answer}
-        Relevant Content: {retrieved_context}
+        Retrieved Content: {retrieved_context}
+        Answer Criteria: {answer_criteria}
 
-        Evaluate whether the answer is relevant to the question based on the retrieved content. Consider:
-        1. Does the answer address the question asked?
-        2. Is the answer grounded in the retrieved content?
-        3. Is the information in the answer factually consistent with the content?
+        Scoring Guidelines:
+        - 8–10: Fully meets criteria, including appropriate "no info" responses
+        - 6–7: Mostly meets criteria with minor issues
+        - 4–5: Partially meets criteria with notable gaps
+        - 2–3: Poor match to criteria or unclear response
+        - 1: Completely wrong or hallucinates when info is expected to be missing
 
-        Provide your evaluation in this exact format:
-        RELEVANCE_SCORE: [score from 1-10]
-        EXPLANATION: [2-3 sentences explaining your evaluation]
+        Return ONLY a valid JSON object in this exact format (no extra commentary):
+        {{
+            "score": <number from 1 to 10>,
+            "explanation": "<Brief explanation (2-3 sentences) of your reasoning>"
+        }}
     """
     
     try:
         # Get evaluation from LLM
         response = llm.invoke(evaluation_prompt)
-        evaluation_text = response.content
+        evaluation_text = response.content.strip()
         
-        # Parse the response to extract score
-        score = 5.0  # Default score
-        explanation = "Could not parse evaluation"
+        # Parse JSON response
+        evaluation_data = json.loads(evaluation_text)
         
-        lines = evaluation_text.strip().split('\n')
-        for line in lines:
-            line = line.strip()
-            if "RELEVANCE_SCORE:" in line:
-                import re
-                match = re.search(r'\d+(?:\.\d+)?', line.split("RELEVANCE_SCORE:")[-1])
-                if match:
-                    score = float(match.group())
-                    score = min(max(score, 0), 10)  # Clamp between 0-10
-            elif "EXPLANATION:" in line:
-                explanation = line.split("EXPLANATION:")[-1].strip()
+        score = float(evaluation_data.get("score", 5.0))
+        score = min(max(score, 0), 10)  # Clamp between 0-10
+        explanation = evaluation_data.get("explanation", "No explanation provided")
         
         return {
             "key": "relevance_score",
@@ -98,6 +105,13 @@ def relevance_evaluator(inputs: dict, outputs: dict, reference_outputs: dict):
             "comment": explanation
         }
         
+    except json.JSONDecodeError as e:
+        return {
+            "key": "relevance_score",
+            "score": 0.0,
+            "value": "0/10",
+            "comment": f"Failed to parse JSON response: {evaluation_text[:100]}..."
+        }
     except Exception as e:
         return {
             "key": "relevance_score",
@@ -109,11 +123,16 @@ def relevance_evaluator(inputs: dict, outputs: dict, reference_outputs: dict):
 # Run evaluation
 try:
     results = client.evaluate(
+        # target for evaluation
         target_function,
+        # dataset to use
         data=DATASET_NAME,
+        # evaluators to use
         evaluators=[relevance_evaluator],
+        # name of the experiment
         experiment_prefix="relevance-eval",
-        max_concurrency=1,
+        # number of concurrent runs
+        max_concurrency=1, 
     )
     
     print("Evaluation completed successfully!")

@@ -4,7 +4,6 @@ from url_fetcher import fetch_url_content_as_chunks, validate_url
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from dotenv import load_dotenv
 
 class RAGChain:
@@ -20,13 +19,12 @@ class RAGChain:
         self.prompt = ChatPromptTemplate.from_template("""
             You are a helpful assistant that answers questions based on the context. 
             Stick to the context for the answer.
+            If the question is not related to the context, say "I don't know" or "I don't have information about that".
                                                        
             Context: {context}
             Question: {question}
         """)
         
-        # Create the retrieval chain using LCEL
-        self.rag_chain = None
    
     def process_url(self, url: str) -> str:
         """Fetch content from URL and initialize vector store"""
@@ -40,38 +38,21 @@ class RAGChain:
         
         # Initialize the RAG chain using LCEL pattern
         
-        def format_docs(docs):
-            return "\n\n".join(doc.page_content for doc in docs)
-        
-        def retrieve_and_format(question):
-            docs = self.retriever.retrieve(question)
-            return format_docs(docs)
-        
-        self.rag_chain = (
-            {"context": RunnableLambda(retrieve_and_format), "question": RunnablePassthrough()}
-            | self.prompt
-            | self.llm
-            | StrOutputParser()
-        )
-        
         # Return confirmation
         return "Vector store initialized."
     
     def query_data_with_context(self, question: str) -> dict:
         """Answer question and return both answer and retrieved context"""
-        if not self.rag_chain:
-            return {
-                "answer": "No vector store initialized. Please process a URL first.",
-                "context": ""
-            }
         
         try:
-            # Retrieve documents first
+            # Retrieve documents
             docs = self.retriever.retrieve(question)
             context = "\n\n".join(doc.page_content for doc in docs)
             
-            # Get answer using the chain
-            answer = self.rag_chain.invoke(question)
+            # Use the retrieved context directly with prompt and LLM
+            prompt_input = {"context": context, "question": question}
+            formatted_prompt = self.prompt.format(**prompt_input)
+            answer = self.llm.invoke(formatted_prompt).content
             
             return {
                 "answer": answer,
